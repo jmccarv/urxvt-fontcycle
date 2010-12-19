@@ -1,0 +1,481 @@
+#! perl
+
+# See the bottom of this file for documentation (or run
+# perldoc on this file)
+
+my $me = 'font-cycle';
+
+#
+# See rxvt.h for the XTerm Operating System Commands
+#
+my %cmd_map = ( ''           => 50,    # XTerm_font
+                'bold'       => 711,   # URxvt_boldFont
+                'italic'     => 712,   # URxvt_italicFont
+                'boldItalic' => 713,   # URxvt_boldItalicFont
+              );
+
+# Keypad 0-9
+my %accel_map = ( 0xffb0 => 0, 0xff9e => 0,
+                  0xffb1 => 1, 0xff9c => 1,
+                  0xffb2 => 2, 0xff99 => 2,
+                  0xffb3 => 3, 0xff9b => 3,
+                  0xffb4 => 4, 0xff96 => 4,
+                  0xffb5 => 5, 0xff9d => 5,
+                  0xffb6 => 6, 0xff98 => 6,
+                  0xffb7 => 7, 0xff95 => 7,
+                  0xffb8 => 8, 0xff97 => 8,
+                  0xffb9 => 9, 0xff9a => 9,
+                );
+
+
+sub get_x_resource {
+    my ($self, $resource) = @_;
+
+    my $val = $self->x_resource($resource);
+    return undef unless defined $val;
+
+    $val = $self->locale_decode($val);
+    utf8::encode $val;
+    $val;
+}
+
+sub get_accelerator_mask {
+    my ($self, $accel_name) = @_;
+
+    my $accel = $self->get_x_resource("$me.$accel_name");
+    return undef unless defined $accel;
+
+    my %modmap = ( mod1 => urxvt::Mod1Mask,
+                   mod2 => urxvt::Mod2Mask,
+                   mod3 => urxvt::Mod3Mask,
+                   mod4 => urxvt::Mod4Mask,
+                   mod5 => urxvt::Mod5Mask,
+                 );
+
+    return $modmap{lc($accel)} if ($modmap{lc($accel)});
+
+    %modmap = ( s => urxvt::ShiftMask,
+                c => urxvt::ControlMask,
+                i => $self->{term}->ModLevel3Mask,
+                m => $self->{term}->ModMetaMask,
+                1 => urxvt::Mod1Mask,
+                2 => urxvt::Mod2Mask,
+                3 => urxvt::Mod3Mask,
+                4 => urxvt::Mod4Mask,
+                5 => urxvt::Mod5Mask,
+              );
+
+    $modmap{lc(substr($accel,0,1))};
+}
+
+sub get_font_list {
+    my ($self, $which) = @_;
+    my $font = $which ? 'Font' : 'font';
+
+    $self->{fonts}->{$which} = [];
+
+    for (my $idx = 0; defined(my $res = $self->get_x_resource("$me.${which}$font.$idx")); $idx++) {
+        push @{$self->{fonts}->{$which}}, $res;
+        $self->{max_idx} = $idx if ($idx > $self->{max_idx});
+    }
+}
+
+sub do_clone {
+    my ($self, $which) = @_;
+    my $clone = $which ? 'Clone' : 'clone';
+
+    return unless defined(my $from = $self->get_x_resource("$me.${which}$clone"));
+
+    $from = '' if ($from =~ /plain/i);
+
+    return if ($which eq $from);
+
+    # If we ever want to be able to modify a list at runtime, this needs to
+    # be changed to make a copy: ... = [@{$self->{fonts}->{$from}}];
+    $self->{fonts}->{$which} = $self->{fonts}->{$from};
+}
+
+sub on_init {
+    my ($self) = @_;
+
+    $self->{cur_idx}          = 0;
+    $self->{max_idx}          = -1;
+    $self->{default_idx}      = $self->get_x_resource("$me.defaultIdx");
+    $self->{accel_mask}       = $self->get_accelerator_mask('accelerator');
+    $self->{mouse_accel_mask} = $self->get_accelerator_mask('mouseAccelerator');
+
+    $self->get_font_list($_) for (keys %cmd_map);
+    $self->do_clone($_)      for (keys %cmd_map);
+
+    #
+    # Try to find which index to start with based on the current
+    # font setting (the one which will be in effect when the terminal
+    # starts.)  I originally tried to force a font switch to the default
+    # in an on_start() method (see bottom of file) but that broke
+    # window placement specified with -geometry (don't know why).
+    #
+    my $font = $self->locale_decode($self->{term}->resource('font'));
+    utf8::encode($font);
+
+    for (my $i = 0; $i < @{$self->{fonts}->{''}}; $i++) {
+        $self->{cur_idx} = $i, last if ($font && 0 == index($self->{fonts}->{''}->[$i], $font))
+    }
+
+    $self->{default_idx} = $self->{cur_idx} unless defined $self->{default_idx};
+
+    $self->{enabled} = 1;
+
+    push @{$self->{term}->{option_popup_hook}}, sub {
+        ("font cycle" => $self->{enabled}, sub { $self->{enabled} = shift })
+    };
+
+    ()
+}
+
+sub on_user_command {
+    my ($self, $cmd) = @_;
+
+    return unless $self->{enabled};
+
+    $self->decrease_font   if ($cmd eq "$me:decrease_font");
+    $self->increase_font   if ($cmd eq "$me:increase_font");
+    $self->default_font    if ($cmd eq "$me:default_font");
+    $self->switch_font($1) if ($cmd =~ /^$me:font:([0-9]+)$/);
+
+    ()
+}
+
+sub on_key_press {
+    my ($self, $event, $keysym, $str) = @_;
+
+    return () unless $self->{enabled};
+    return () unless defined $self->{accel_mask};
+    return () unless ($event->{state} & $self->{accel_mask});    
+
+    if ($keysym == 0xffab) {       # KP_Add
+        $self->increase_font;
+
+    } elsif ($keysym == 0xffad) {  # KP_Subtract
+        $self->decrease_font;
+
+    } elsif ($keysym == 0xff8d) {  # KP_Enter
+        $self->default_font;
+
+    } elsif (defined($accel_map{$keysym})) {
+        $self->switch_font($accel_map{$keysym});
+
+    } else {
+        return ();
+    }
+
+    1;
+}
+
+sub on_button_press {
+    my ($self, $event) = @_;
+
+    return () unless $self->{enabled};
+    return () unless defined $self->{mouse_accel_mask};
+    return () unless ($event->{state} & $self->{mouse_accel_mask});
+    
+    if ($event->{button} == 4) {  # scroll wheel up
+        $self->increase_font;
+
+    } elsif ($event->{button} == 5) {  # scroll wheel down
+        $self->decrease_font;
+
+    } elsif ($event->{button} == 2) {  # middle button
+        $self->default_font;
+
+    } else {
+        return ();
+    }
+
+    1;
+}
+
+sub on_button_release {
+    my ($self, $event) = @_;
+
+    return () unless $self->{enabled};
+    return () unless defined $self->{mouse_accel_mask};
+    return () unless ($event->{state} & $self->{mouse_accel_mask});
+
+    if ($event->{button} == 4 ||
+        $event->{button} == 5 ||
+        $event->{button} == 2) {
+        return 1;
+    }
+
+    ();
+}
+
+sub increase_font { my $self = shift; $self->switch_font($self->{cur_idx}+1)   }
+sub decrease_font { my $self = shift; $self->switch_font($self->{cur_idx}-1)   }
+sub default_font  { my $self = shift; $self->switch_font($self->{default_idx}) }
+
+sub switch_font {
+    my ($self, $idx) = @_;
+
+    return if ($idx < 0 || $idx > $self->{max_idx});
+
+    for (keys %cmd_map) {
+        next unless (my $font = $self->{fonts}->{$_}->[$idx]);
+
+        $self->{term}->cmd_parse($self->{term}->locale_encode("\033]$cmd_map{$_};$font\007"));
+    }
+
+    $self->{cur_idx} = $idx;
+}
+
+=pod
+
+=head1 OVERVIEW
+
+This rxvt-unicode (urxvt) extension provides the ability to have multiple
+fonts configured and easily switch between them at runtime.
+
+A list of fonts for each of the following font styles may be configured:
+
+=over
+
+=item * plain - normal font
+
+=item * bold
+
+=item * italic
+
+=item * boldItalic
+
+=back
+
+To save typing, one list may be cloned from another with the C<clone> directive.
+
+When urxvt starts, font-cycle will look at the current font setting and
+search for that font (or list of fonts) in its font list.  If found, font-cycle
+will start with that position in the list, otherwise it will start with the
+first element in its list. 
+
+=head1 USAGE
+
+Keys may be bound by the normal urxvt mechanism 
+(urxvt.keysym.<key>: perl:font-cycle:<cmd>) to the
+following font-cycle commands:
+
+=over
+
+=item increase_font
+
+Switch to the next index in the font list
+
+=item decrease_font
+
+Switch to the previous index in the font list
+
+=item default_font
+
+Switch to the configured or detected default font
+
+=item font:<num>
+
+Switch to the font at index <num>
+
+=back
+
+You may configure the C<urxvt.font-cycle.accelerator> 
+and C<urxvt.font-cycle.mouseAccelerator> (see CONFIGURATION)
+
+By configuring the accelerator key you gain the following key bindings automatically:
+
+=over
+
+=item <accel>+KP_Minus
+
+Switch to previous index in font list (same as font-cycle:decrease_font)
+
+=item <accel>+KP_Plus
+
+Switch to next index in font list (same as font-cycle:increase_font)
+
+=item <accel>+KP_Enter
+
+Switch to default font (same as font-cycle:default_font)
+
+=item <accel>+KP0-KP9
+
+Switch to index 0-9 in font list (same as font-cycle:font:<0-9>)
+
+=back
+
+By configuring the mouseAccelerator key you gain the following mouse bindings:
+
+=over
+
+=item <accel>+Button4 (scroll wheel up)
+
+Switch to next index in font list
+
+=item <accel>+Button5 (scroll wheel down)
+
+Switch to previous index in font list
+
+=item <accel>+Button2 (middle button)
+
+Switch to default font
+
+=back
+
+=head1 CONFIGURATION
+
+Configuration is done much the same as other urxvt settings, as X resources.
+
+=over
+
+=item urxvt.font-cycle.font.<num>: <list>
+
+Each <num> (starting with 0 and increasing by 1 for each entry) is a
+comma separated list of fonts to switch to.
+
+=item urxvt.font-cycle.boldFont.<num>
+
+=item urxvt.font-cycle.itialicFont.<num>
+
+=item urxvt.font-cycle.boldItialicFont.<num>
+
+These are all the same as .font.<num> for bold, italic, and boldItalic
+fonts respectively.
+
+=item urxvt.font-cycle.clone: <from>
+
+Clone the <from> list to the normal font list.  <from> may be one of:
+
+=over
+
+=item * bold
+
+=item * italic
+
+=item * boldItalic
+
+=back
+
+=item urxvt.font-cycle.boldClone: <from>
+
+=item urxvt.font-cycle.italicClone: <from>
+
+=item urxvt.font-cycle.boldItalicColne: <from>
+
+Clone the <from> list to bold, italic, or boldItalic respectively.  To
+clone the normal font list (font-cycle.font.*) use 'plain' for the <from> value.
+
+=item urxvt.font-cycle.defaultIdx: <num>
+
+This configures a default font setting for font-cycle.  <num> is an index into
+the font lists.  When the command C<default_font> is executed, the
+font(s) will be switched to those at the <num> index in the font lists.
+
+If not configured, this will default to the detected starting font or 0 if
+no starting font is detected.
+
+=item urxvt.font-cycle.accelerator: <key>
+
+Configure the accelerator key to one of the following keys
+(single character shortcuts in parenthesis)
+
+=over
+
+=item * Shift (S)
+
+=item * Control (C)
+
+=item * ISOLevel3 (I)
+
+=item * Meta (M)
+
+=item * Mod1 (1)
+
+=item * Mod2 (2)
+
+=item * Mod3 (3)
+
+=item * Mod4 (4)
+
+=item * Mod5 (5)
+
+=back
+
+=back
+
+=head1 EXAMPLE CONFIGURATION
+
+Set the regular font and boldFont settings for urxvt
+  urxvt*font: -misc-fixed-medium-r-semicondensed--13-100-100-100-c-60-iso8859-1
+  urxvt*boldFont: -misc-fixed-medium-r-semicondensed--13-100-100-100-c-60-iso8859-1
+
+With this commented out, font-cycle will use the detected starting font as the
+default index (in this case, 2)
+  !urxvt*font-cycle.defaultIdx: 4
+
+Tell font-cycle to create the boldFont list from the regular font list
+  urxvt*font-cycle.boldClone: plain
+
+Set up the regular font list with all fonts to switch between
+  urxvt*font-cycle.font.0: -misc-fixed-medium-r-normal--7-50-100-100-c-50-iso8859-1
+  urxvt*font-cycle.font.1: -misc-fixed-medium-r-normal--10-100-75-75-c-60-iso8859-1
+  urxvt*font-cycle.font.2: -misc-fixed-medium-r-semicondensed--13-100-100-100-c-60-iso8859-1
+  urxvt*font-cycle.font.3: -xos4-terminus-bold-r-normal--14-140-72-72-c-80-iso8859-1
+  urxvt*font-cycle.font.4: -xos4-terminus-bold-r-normal--16-160-72-72-c-80-iso8859-1
+  urxvt*font-cycle.font.5: -xos4-terminus-bold-r-normal--20-200-72-72-c-100-iso8859-1
+  urxvt*font-cycle.font.6: -xos4-terminus-bold-r-normal--24-240-72-72-c-120-iso8859-1
+  urxvt*font-cycle.font.7: -xos4-terminus-bold-r-normal--28-280-72-72-c-140-iso8859-1
+  urxvt*font-cycle.font.8: -xos4-terminus-bold-r-normal--32-320-72-72-c-160-iso8859-1
+
+Configure key bindings
+  urxvt*keysym.Shift-KP_Subtract: perl:font-cycle:decrease_font
+  urxvt*keysym.Shift-KP_Add: perl:font-cycle:increase_font
+  urxvt*keysym.Shift-KP_Enter: perl:font-cycle:default_font
+  urxvt*keysym.Shift-KP_Multiply: perl:font-cycle:font:4
+
+Configure accelerator
+  !urxvt*font-cycle.accelerator: Control
+  urxvt*font-cycle.accelerator: C
+
+Notes:
+
+=over
+
+=item * the .font.2 matches the urxvt*font setting.  font-cycle will see
+this and know to start with the .2 element in the font list and to configure
+the defaultIdx to be 2 (since it was commented out).
+
+=item * all clone operations are performed after all font lists have been
+read, so in the example above, the bold list that is cloned from
+the plain list will have all 9 entries that the plain list is
+configured with.
+
+=back
+
+=head1 AUTHOR
+
+Jason McCarver (slam@parasite.cc)
+
+=cut
+
+# Switching fonts in the on_start() method broke the positioning
+# part of -geometry, like it was being ignored.  :(
+#sub on_start { 
+#    my ($self) = @_;
+#
+#    my $term = $self->{term};
+#    my $geom = $term->resource("geometry");
+#    $self->switch_font($self->{default_idx});
+#
+#    if ($geom =~ /\+([0-9]+)\+([0-9]+)/) {
+#        my ($xofs, $yofs) = ($1, $2);
+#        urxvt::warn("xofs=$xofs  yofs=$yofs\n");
+#        urxvt::warn("term_width=".$term->width."  term_height=".$term->height."\n");
+#        #$term->XMoveResizeWindow($term->parent, $xofs, $yofs, $term->width, $term->height);
+#    }
+#
+#    ()
+#}
