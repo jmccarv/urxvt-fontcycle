@@ -1,0 +1,10 @@
+urxvt-fontcycle
+
+This rxvt-unicode (urxvt) extension provides the ability to have
+multiple fonts configured and easily switch between them at runtime.
+
+This can allow you to (among other things) easily increase and decrease
+font size.  But it's more than that because you choose the fonts to cycle
+between, it's not just one font.
+
+Please see perldoc font-cycle for the manual.
