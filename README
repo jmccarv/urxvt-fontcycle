@@ -4,7 +4,193 @@ This rxvt-unicode (urxvt) extension provides the ability to have
 multiple fonts configured and easily switch between them at runtime.
 
 This can allow you to (among other things) easily increase and decrease
-font size.  But it's more than that because you choose the fonts to cycle
-between, it's not just one font.
+font size.  But it's more than that because you choose the fonts to 
+cycle between, it's not just one font.
 
-Please see perldoc font-cycle for the manual.
+-----------------------------------------------------------------------
+
+OVERVIEW
+    This rxvt-unicode (urxvt) extension provides the ability to have
+    multiple fonts configured and easily switch between them at runtime.
+
+    A list of fonts for each of the following font styles may be configured:
+
+    *   plain - normal font
+
+    *   bold
+
+    *   italic
+
+    *   boldItalic
+
+    To save typing, one list may be cloned from another with the "clone"
+    directive.
+
+    When urxvt starts, font-cycle will look at the current font setting and
+    search for that font (or list of fonts) in its font list. If found,
+    font-cycle will start with that position in the list, otherwise it will
+    start with the first element in its list.
+
+USAGE
+    Keys may be bound by the normal urxvt mechanism (urxvt.keysym.<key>:
+    perl:font-cycle:<cmd>) to the following font-cycle commands:
+
+    increase_font
+        Switch to the next index in the font list
+
+    decrease_font
+        Switch to the previous index in the font list
+
+    default_font
+        Switch to the configured or detected default font
+
+    font:<num>
+        Switch to the font at index <num>
+
+    You may configure the "urxvt.font-cycle.accelerator" and
+    "urxvt.font-cycle.mouseAccelerator" (see CONFIGURATION)
+
+    By configuring the accelerator key you gain the following key bindings
+    automatically:
+
+    <accel>+KP_Minus
+        Switch to previous index in font list (same as
+        font-cycle:decrease_font)
+
+    <accel>+KP_Plus
+        Switch to next index in font list (same as font-cycle:increase_font)
+
+    <accel>+KP_Enter
+        Switch to default font (same as font-cycle:default_font)
+
+    <accel>+KP0-KP9
+        Switch to index 0-9 in font list (same as font-cycle:font:<0-9>)
+
+    By configuring the mouseAccelerator key you gain the following mouse
+    bindings:
+
+    <accel>+Button4 (scroll wheel up)
+        Switch to next index in font list
+
+    <accel>+Button5 (scroll wheel down)
+        Switch to previous index in font list
+
+    <accel>+Button2 (middle button)
+        Switch to default font
+
+CONFIGURATION
+    Configuration is done much the same as other urxvt settings, as X
+    resources.
+
+    urxvt.font-cycle.font.<num>: <list>
+        Each <num> (starting with 0 and increasing by 1 for each entry) is a
+        comma separated list of fonts to switch to.
+
+    urxvt.font-cycle.boldFont.<num>
+    urxvt.font-cycle.itialicFont.<num>
+    urxvt.font-cycle.boldItialicFont.<num>
+        These are all the same as .font.<num> for bold, italic, and
+        boldItalic fonts respectively.
+
+    urxvt.font-cycle.clone: <from>
+        Clone the <from> list to the normal font list. <from> may be one of:
+
+        *   bold
+
+        *   italic
+
+        *   boldItalic
+
+    urxvt.font-cycle.boldClone: <from>
+    urxvt.font-cycle.italicClone: <from>
+    urxvt.font-cycle.boldItalicColne: <from>
+        Clone the <from> list to bold, italic, or boldItalic respectively.
+        To clone the normal font list (font-cycle.font.*) use 'plain' for
+        the <from> value.
+
+    urxvt.font-cycle.defaultIdx: <num>
+        This configures a default font setting for font-cycle. <num> is an
+        index into the font lists. When the command "default_font" is
+        executed, the font(s) will be switched to those at the <num> index
+        in the font lists.
+
+        If not configured, this will default to the detected starting font
+        or 0 if no starting font is detected.
+
+    urxvt.font-cycle.accelerator: <key>
+        Configure the accelerator key to one of the following keys (single
+        character shortcuts in parenthesis)
+
+        *   Shift (S)
+
+        *   Control (C)
+
+        *   ISOLevel3 (I)
+
+        *   Meta (M)
+
+        *   Mod1 (1)
+
+        *   Mod2 (2)
+
+        *   Mod3 (3)
+
+        *   Mod4 (4)
+
+        *   Mod5 (5)
+
+EXAMPLE CONFIGURATION
+    Set the regular font and boldFont settings for urxvt urxvt*font:
+    -misc-fixed-medium-r-semicondensed--13-100-100-100-c-60-iso8859-1
+    urxvt*boldFont:
+    -misc-fixed-medium-r-semicondensed--13-100-100-100-c-60-iso8859-1
+
+    With this commented out, font-cycle will use the detected starting font
+    as the default index (in this case, 2) !urxvt*font-cycle.defaultIdx: 4
+
+    Tell font-cycle to create the boldFont list from the regular font list
+    urxvt*font-cycle.boldClone: plain
+
+    Set up the regular font list with all fonts to switch between
+    urxvt*font-cycle.font.0:
+    -misc-fixed-medium-r-normal--7-50-100-100-c-50-iso8859-1
+    urxvt*font-cycle.font.1:
+    -misc-fixed-medium-r-normal--10-100-75-75-c-60-iso8859-1
+    urxvt*font-cycle.font.2:
+    -misc-fixed-medium-r-semicondensed--13-100-100-100-c-60-iso8859-1
+    urxvt*font-cycle.font.3:
+    -xos4-terminus-bold-r-normal--14-140-72-72-c-80-iso8859-1
+    urxvt*font-cycle.font.4:
+    -xos4-terminus-bold-r-normal--16-160-72-72-c-80-iso8859-1
+    urxvt*font-cycle.font.5:
+    -xos4-terminus-bold-r-normal--20-200-72-72-c-100-iso8859-1
+    urxvt*font-cycle.font.6:
+    -xos4-terminus-bold-r-normal--24-240-72-72-c-120-iso8859-1
+    urxvt*font-cycle.font.7:
+    -xos4-terminus-bold-r-normal--28-280-72-72-c-140-iso8859-1
+    urxvt*font-cycle.font.8:
+    -xos4-terminus-bold-r-normal--32-320-72-72-c-160-iso8859-1
+
+    Configure key bindings urxvt*keysym.Shift-KP_Subtract:
+    perl:font-cycle:decrease_font urxvt*keysym.Shift-KP_Add:
+    perl:font-cycle:increase_font urxvt*keysym.Shift-KP_Enter:
+    perl:font-cycle:default_font urxvt*keysym.Shift-KP_Multiply:
+    perl:font-cycle:font:4
+
+    Configure accelerator !urxvt*font-cycle.accelerator: Control
+    urxvt*font-cycle.accelerator: C
+
+    Notes:
+
+    *   the .font.2 matches the urxvt*font setting. font-cycle will see this
+        and know to start with the .2 element in the font list and to
+        configure the defaultIdx to be 2 (since it was commented out).
+
+    *   all clone operations are performed after all font lists have been
+        read, so in the example above, the bold list that is cloned from the
+        plain list will have all 9 entries that the plain list is configured
+        with.
+
+AUTHOR
+    Jason McCarver (slam@parasite.cc)
+
