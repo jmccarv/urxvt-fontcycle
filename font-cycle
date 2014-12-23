@@ -1,9 +1,12 @@
 #! perl
 
+use Data::Dumper;
+
 # See the bottom of this file for documentation (or run
 # perldoc on this file)
 
-my $me = 'font-cycle';
+my $me        = 'font-cycle';
+my $debug_env = $ENV{'FONT_CYCLE_DEBUG'};
 
 #
 # See rxvt.h for the XTerm Operating System Commands
@@ -27,6 +30,11 @@ my %accel_map = ( 0xffb0 => 0, 0xff9e => 0,
                   0xffb9 => 9, 0xff9a => 9,
                 );
 
+sub debug {
+    my $self = shift;
+    return unless $debug_env || $self->x_resource("$me.debug");
+    print STDERR "$me: ",@_;
+}
 
 sub get_x_resource {
     my ($self, $resource) = @_;
@@ -129,6 +137,8 @@ sub on_init {
         ("font cycle" => $self->{enabled}, sub { $self->{enabled} = shift })
     };
 
+    $self->debug(Dumper($self));
+
     ()
 }
 
@@ -136,6 +146,7 @@ sub on_user_command {
     my ($self, $cmd) = @_;
 
     return unless $self->{enabled};
+    $self->debug("on_user_command: cmd=$cmd\n");
 
     $self->decrease_font   if ($cmd eq "$me:decrease_font");
     $self->increase_font   if ($cmd eq "$me:increase_font");
@@ -149,9 +160,11 @@ sub on_key_press {
     my ($self, $event, $keysym, $str) = @_;
 
     return () unless $self->{enabled};
+    $self->debug(sprintf("on_key_press: state=0x%x  accel_mask=0x%x\n", $event->{state}, $self->{accel_mask}));
     return () unless defined $self->{accel_mask};
     return () unless ($event->{state} & $self->{accel_mask});    
 
+    $self->debug(sprintf("on_key_press: keysym=0x%x\n", $keysym));
     if ($keysym == 0xffab) {       # KP_Add
         $self->increase_font;
 
@@ -175,6 +188,7 @@ sub on_button_press {
     my ($self, $event) = @_;
 
     return () unless $self->{enabled};
+    $self->debug(sprintf("on_button_press: state=0x%x  button=%d  mouse_accel_mask=0x%x\n", $event->{state}, $event->{button}, $self->{mouse_accel_mask}));
     return () unless defined $self->{mouse_accel_mask};
     return () unless ($event->{state} & $self->{mouse_accel_mask});
     
@@ -217,11 +231,13 @@ sub default_font  { my $self = shift; $self->switch_font($self->{default_idx}) }
 sub switch_font {
     my ($self, $idx) = @_;
 
+    $self->debug("switch_font(): new idx=$idx  max=".$self->{max_idx}."\n");
     return if ($idx < 0 || $idx > $self->{max_idx});
 
     for (keys %cmd_map) {
         next unless (my $font = $self->{fonts}->{$_}->[$idx]);
 
+        $self->debug(sprintf("switch_font(): sending command %d; font: %s\n", $cmd_map{$_}, $font));
         $self->{term}->cmd_parse($self->{term}->locale_encode("\033]$cmd_map{$_};$font\007"));
     }
 
@@ -403,6 +419,24 @@ Configure the accelerator key to one of the following keys
 =item * Mod5 (5)
 
 =back
+
+=item urxvt.font-cycle.debug:
+
+If set to something perl interprets as true, debugging will be
+output to STDERR.
+
+=back
+
+=head1 ENVIRONMENT
+
+The following environment variables may be used to control font-cycle:
+
+=over
+
+=item FONT_CYCLE_DEBUG
+
+Same as the L<urxvt.font-cycle.debug> X resource.  If set to something
+perl interprets as true, debugging will be output to STDERR
 
 =back
 
