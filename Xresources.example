@@ -1,16 +1,46 @@
+urxvt*loginShell: true
+urxvt*geometry:   80x25
+
+urxvt*cursorColor: #07A
+urxvt*borderColor: #003
+urxvt*background: #000
+!urxvt*foreground: #A8A8A8
+urxvt*foreground: white
+urxvt*color0:     #000
+urxvt*color1:     #A00
+urxvt*color2:     #0A0
+urxvt*color3:     #A50
+urxvt*color4:     #00A
+urxvt*color5:     #A0A
+urxvt*color6:     #0AA
+urxvt*color7:     #AAA
+urxvt*color8:     #555
+urxvt*color9:     #F55
+urxvt*color10:    #5F5
+urxvt*color11:    #FF5
+!urxvt*color12:    #55F
+urxvt*color12:    DodgerBlue
+urxvt*color13:    #F5F
+urxvt*color14:    #5FF
+urxvt*color15:    #FFF
+
 urxvt*font: -misc-fixed-medium-r-semicondensed--13-100-100-100-c-60-iso8859-1,-misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso10646-1,xft:Code2000:antialias=false
 urxvt*boldFont: -misc-fixed-medium-r-semicondensed--13-100-100-100-c-60-iso8859-1,-misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso10646-1,xfg:Code2000:antialias=false
 
+!urxvt*perl-lib: /home/slam/src/hg/urxvt-fontcycle-test
+urxvt*perl-lib: /home/slam/src/hg/urxvt-fontcycle
 urxvt*perl-ext-common:  font-cycle
+!urxvt*perl-ext-common:  selection-autotransform,font-cycle,selection-eol,matcher,option-popup,selection-popup,searchable-scrollback,magic
 
-urxvt*font-cycle.boldClone: plain
-urxvt*font-cycle.accelerator: Shift
-urxvt*font-cycle.mouseAccelerator: C
-urxvt*font-cycle.font.0: -misc-fixed-medium-r-normal--7-50-100-100-c-50-iso8859-1,-misc-fixed-medium-r-normal--7-50-100-100-c-50-iso10646-1,xft:Code2000:antialias=false
-urxvt*font-cycle.font.1: -misc-fixed-medium-r-normal--10-100-75-75-c-60-iso8859-1,-misc-fixed-medium-r-normal--7-50-100-100-c-50-iso10646-1,xft:Code2000:antialias=false
-urxvt*font-cycle.font.2: -misc-fixed-medium-r-semicondensed--13-100-100-100-c-60-iso8859-1,-misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso10646-1,xft:Code2000:antialias=false
-urxvt*font-cycle.font.3: -xos4-terminus-bold-r-normal--16-160-72-72-c-80-iso8859-1,-xos4-terminus-bold-r-normal--16-160-72-72-c-80-iso10646-1,xft:Code2000:antialias=false
-urxvt*font-cycle.font.4: -xos4-terminus-bold-r-normal--20-200-72-72-c-100-iso8859-1,-xos4-terminus-bold-r-normal--20-200-72-72-c-100-iso10646-1,xft:Code2000:antialias=false
-urxvt*font-cycle.font.5: -xos4-terminus-bold-r-normal--24-240-72-72-c-120-iso8859-1,-xos4-terminus-bold-r-normal--24-240-72-72-c-120-iso10646-1,xft:Code2000:antialias=false
-urxvt*font-cycle.font.6: -xos4-terminus-bold-r-normal--28-280-72-72-c-140-iso8859-1,-xos4-terminus-bold-r-normal--28-280-72-72-c-140-iso10646-1,xft:Code2000:antialias=false
-urxvt*font-cycle.font.7: -xos4-terminus-bold-r-normal--32-320-72-72-c-160-iso8859-1,-xos4-terminus-bold-r-normal--32-320-72-72-c-160-iso10646-1,xft:Code2000:antialias=false
+urxvt.font-cycle.boldClone: plain
+urxvt.font-cycle.accelerator: Shift
+urxvt.font-cycle.mouseAccelerator: C
+urxvt.font-cycle.font.0: -misc-fixed-medium-r-normal--7-50-100-100-c-50-iso8859-1,-misc-fixed-medium-r-normal--7-50-100-100-c-50-iso10646-1,xft:Code2000:antialias=false
+urxvt.font-cycle.font.1: -misc-fixed-medium-r-normal--10-100-75-75-c-60-iso8859-1,-misc-fixed-medium-r-normal--7-50-100-100-c-50-iso10646-1,xft:Code2000:antialias=false
+urxvt.font-cycle.font.2: -misc-fixed-medium-r-semicondensed--13-100-100-100-c-60-iso8859-1,-misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso10646-1,xft:Code2000:antialias=false
+urxvt.font-cycle.font.3: -xos4-terminus-bold-r-normal--16-160-72-72-c-80-iso8859-1,-xos4-terminus-bold-r-normal--16-160-72-72-c-80-iso10646-1,xft:Code2000:antialias=false
+urxvt.font-cycle.font.4: -xos4-terminus-bold-r-normal--20-200-72-72-c-100-iso8859-1,-xos4-terminus-bold-r-normal--20-200-72-72-c-100-iso10646-1,xft:Code2000:antialias=false
+urxvt.font-cycle.font.5: -xos4-terminus-bold-r-normal--24-240-72-72-c-120-iso8859-1,-xos4-terminus-bold-r-normal--24-240-72-72-c-120-iso10646-1,xft:Code2000:antialias=false
+urxvt.font-cycle.font.6: -xos4-terminus-bold-r-normal--28-280-72-72-c-140-iso8859-1,-xos4-terminus-bold-r-normal--28-280-72-72-c-140-iso10646-1,xft:Code2000:antialias=false
+urxvt.font-cycle.font.7: -xos4-terminus-bold-r-normal--32-320-72-72-c-160-iso8859-1,-xos4-terminus-bold-r-normal--32-320-72-72-c-160-iso10646-1,xft:Code2000:antialias=false
+urxvt*font-cycle.debug: 1

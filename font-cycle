@@ -2,11 +2,10 @@
 
 use Data::Dumper;
 
+my $VERSION = '0.01';
+
 # See the bottom of this file for documentation (or run
 # perldoc on this file)
-
-my $me        = 'font-cycle';
-my $debug_env = $ENV{'FONT_CYCLE_DEBUG'};
 
 #
 # See rxvt.h for the XTerm Operating System Commands
@@ -32,14 +31,14 @@ my %accel_map = ( 0xffb0 => 0, 0xff9e => 0,
 
 sub debug {
     my $self = shift;
-    return unless $debug_env || $self->x_resource("$me.debug");
-    print STDERR "$me: ",@_;
+    return unless $self->{debug};
+    print STDERR "$self->{_name}: ",@_;
 }
 
 sub get_x_resource {
     my ($self, $resource) = @_;
 
-    my $val = $self->x_resource($resource);
+    my $val = $self->x_resource('%.'.$resource);
     return undef unless defined $val;
 
     $val = $self->locale_decode($val);
@@ -50,7 +49,7 @@ sub get_x_resource {
 sub get_accelerator_mask {
     my ($self, $accel_name) = @_;
 
-    my $accel = $self->get_x_resource("$me.$accel_name");
+    my $accel = $self->get_x_resource($accel_name);
     return undef unless defined $accel;
 
     my %modmap = ( mod1 => urxvt::Mod1Mask,
@@ -82,7 +81,7 @@ sub get_font_list {
 
     $self->{fonts}->{$which} = [];
 
-    for (my $idx = 0; defined(my $res = $self->get_x_resource("$me.${which}$font.$idx")); $idx++) {
+    for (my $idx = 0; defined(my $res = $self->get_x_resource("${which}$font.$idx")); $idx++) {
         push @{$self->{fonts}->{$which}}, $res;
         $self->{max_idx} = $idx if ($idx > $self->{max_idx});
     }
@@ -92,7 +91,7 @@ sub do_clone {
     my ($self, $which) = @_;
     my $clone = $which ? 'Clone' : 'clone';
 
-    return unless defined(my $from = $self->get_x_resource("$me.${which}$clone"));
+    return unless defined(my $from = $self->get_x_resource("${which}$clone"));
 
     $from = '' if ($from =~ /plain/i);
 
@@ -103,12 +102,16 @@ sub do_clone {
     $self->{fonts}->{$which} = $self->{fonts}->{$from};
 }
 
-sub on_init {
+sub on_start {
     my ($self) = @_;
+
+    $self->{debug} = $ENV{FONT_CYCLE_DEBUG} // $self->x_resource_boolean('%.debug');
+
+    $self->debug("Version: $VERSION\n");
 
     $self->{cur_idx}          = 0;
     $self->{max_idx}          = -1;
-    $self->{default_idx}      = $self->get_x_resource("$me.defaultIdx");
+    $self->{default_idx}      = $self->get_x_resource("defaultIdx");
     $self->{accel_mask}       = $self->get_accelerator_mask('accelerator');
     $self->{mouse_accel_mask} = $self->get_accelerator_mask('mouseAccelerator');
 
@@ -144,6 +147,7 @@ sub on_init {
 
 sub on_user_command {
     my ($self, $cmd) = @_;
+    my $me = $self->{_name};
 
     return unless $self->{enabled};
     $self->debug("on_user_command: cmd=$cmd\n");
@@ -422,8 +426,7 @@ Configure the accelerator key to one of the following keys
 
 =item urxvt.font-cycle.debug:
 
-If set to something perl interprets as true, debugging will be
-output to STDERR.
+If true, debugging output will be sent to STDERR
 
 =back
 
@@ -435,8 +438,10 @@ The following environment variables may be used to control font-cycle:
 
 =item FONT_CYCLE_DEBUG
 
-Same as the L<urxvt.font-cycle.debug> X resource.  If set to something
-perl interprets as true, debugging will be output to STDERR
+If set to something perl interprets as true, debugging will be output 
+to STDERR, otherwise debugging will be disabled.
+
+The environment variable takes precedence over the X resource.
 
 =back
 
