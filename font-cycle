@@ -2,7 +2,7 @@
 
 use Data::Dumper;
 
-my $VERSION = '0.01';
+my $VERSION = '0.02';
 
 # See the bottom of this file for documentation (or run
 # perldoc on this file)
