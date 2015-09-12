@@ -33,7 +33,7 @@ OVERVIEW
 
 USAGE
     Keys may be bound by the normal urxvt mechanism (urxvt.keysym.<key>:
-    perl:font-cycle:<cmd>) to the following font-cycle commands:
+    font-cycle:<cmd>) to the following font-cycle commands:
 
     increase_font
         Switch to the next index in the font list
@@ -140,42 +140,33 @@ CONFIGURATION
         *   Mod5 (5)
 
 EXAMPLE CONFIGURATION
-    Set the regular font and boldFont settings for urxvt urxvt*font:
-    -misc-fixed-medium-r-semicondensed--13-100-100-100-c-60-iso8859-1
-    urxvt*boldFont:
-    -misc-fixed-medium-r-semicondensed--13-100-100-100-c-60-iso8859-1
+    Set the regular font and boldFont settings for urxvt 
+    urxvt*font: -misc-fixed-medium-r-semicondensed--13-100-100-100-c-60-iso8859-1
+    urxvt*boldFont: -misc-fixed-medium-r-semicondensed--13-100-100-100-c-60-iso8859-1
 
     With this commented out, font-cycle will use the detected starting font
-    as the default index (in this case, 2) !urxvt*font-cycle.defaultIdx: 4
+    as the default index (in this case, 2) 
+    !urxvt*font-cycle.defaultIdx: 4
 
     Tell font-cycle to create the boldFont list from the regular font list
     urxvt*font-cycle.boldClone: plain
 
     Set up the regular font list with all fonts to switch between
-    urxvt*font-cycle.font.0:
-    -misc-fixed-medium-r-normal--7-50-100-100-c-50-iso8859-1
-    urxvt*font-cycle.font.1:
-    -misc-fixed-medium-r-normal--10-100-75-75-c-60-iso8859-1
-    urxvt*font-cycle.font.2:
-    -misc-fixed-medium-r-semicondensed--13-100-100-100-c-60-iso8859-1
-    urxvt*font-cycle.font.3:
-    -xos4-terminus-bold-r-normal--14-140-72-72-c-80-iso8859-1
-    urxvt*font-cycle.font.4:
-    -xos4-terminus-bold-r-normal--16-160-72-72-c-80-iso8859-1
-    urxvt*font-cycle.font.5:
-    -xos4-terminus-bold-r-normal--20-200-72-72-c-100-iso8859-1
-    urxvt*font-cycle.font.6:
-    -xos4-terminus-bold-r-normal--24-240-72-72-c-120-iso8859-1
-    urxvt*font-cycle.font.7:
-    -xos4-terminus-bold-r-normal--28-280-72-72-c-140-iso8859-1
-    urxvt*font-cycle.font.8:
-    -xos4-terminus-bold-r-normal--32-320-72-72-c-160-iso8859-1
+    urxvt*font-cycle.font.0: -misc-fixed-medium-r-normal--7-50-100-100-c-50-iso8859-1
+    urxvt*font-cycle.font.1: -misc-fixed-medium-r-normal--10-100-75-75-c-60-iso8859-1
+    urxvt*font-cycle.font.2: -misc-fixed-medium-r-semicondensed--13-100-100-100-c-60-iso8859-1
+    urxvt*font-cycle.font.3: -xos4-terminus-bold-r-normal--14-140-72-72-c-80-iso8859-1
+    urxvt*font-cycle.font.4: -xos4-terminus-bold-r-normal--16-160-72-72-c-80-iso8859-1
+    urxvt*font-cycle.font.5: -xos4-terminus-bold-r-normal--20-200-72-72-c-100-iso8859-1
+    urxvt*font-cycle.font.6: -xos4-terminus-bold-r-normal--24-240-72-72-c-120-iso8859-1
+    urxvt*font-cycle.font.7: -xos4-terminus-bold-r-normal--28-280-72-72-c-140-iso8859-1
+    urxvt*font-cycle.font.8: -xos4-terminus-bold-r-normal--32-320-72-72-c-160-iso8859-1
 
-    Configure key bindings urxvt*keysym.Shift-KP_Subtract:
-    perl:font-cycle:decrease_font urxvt*keysym.Shift-KP_Add:
-    perl:font-cycle:increase_font urxvt*keysym.Shift-KP_Enter:
-    perl:font-cycle:default_font urxvt*keysym.Shift-KP_Multiply:
-    perl:font-cycle:font:4
+    Configure key bindings
+    urxvt*keysym.Shift-KP_Subtract: font-cycle:decrease_font 
+    urxvt*keysym.Shift-KP_Add: font-cycle:increase_font 
+    urxvt*keysym.Shift-KP_Enter: font-cycle:default_font
+    urxvt*keysym.Shift-KP_Multiply: font-cycle:font:4
 
     Configure accelerator !urxvt*font-cycle.accelerator: Control
     urxvt*font-cycle.accelerator: C

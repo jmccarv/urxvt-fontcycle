@@ -145,17 +145,18 @@ sub on_start {
     ()
 }
 
-sub on_user_command {
+#sub on_user_command {
+sub on_action {
     my ($self, $cmd) = @_;
     my $me = $self->{_name};
 
     return unless $self->{enabled};
     $self->debug("on_user_command: cmd=$cmd\n");
 
-    $self->decrease_font   if ($cmd eq "$me:decrease_font");
-    $self->increase_font   if ($cmd eq "$me:increase_font");
-    $self->default_font    if ($cmd eq "$me:default_font");
-    $self->switch_font($1) if ($cmd =~ /^$me:font:([0-9]+)$/);
+    $self->decrease_font   if ($cmd eq "decrease_font");
+    $self->increase_font   if ($cmd eq "increase_font");
+    $self->default_font    if ($cmd eq "default_font");
+    $self->switch_font($1) if ($cmd =~ /^font:([0-9]+)$/);
 
     ()
 }
