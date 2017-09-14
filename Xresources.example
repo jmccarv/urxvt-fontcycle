@@ -44,3 +44,7 @@ urxvt.font-cycle.font.5: -xos4-terminus-bold-r-normal--24-240-72-72-c-120-iso885
 urxvt.font-cycle.font.6: -xos4-terminus-bold-r-normal--28-280-72-72-c-140-iso8859-1,-xos4-terminus-bold-r-normal--28-280-72-72-c-140-iso10646-1,xft:Code2000:antialias=false
 urxvt.font-cycle.font.7: -xos4-terminus-bold-r-normal--32-320-72-72-c-160-iso8859-1,-xos4-terminus-bold-r-normal--32-320-72-72-c-160-iso10646-1,xft:Code2000:antialias=false
 urxvt*font-cycle.debug: 1
+
+! Wrap around the ends of the font list when cycling
+! default is false
+urxvt.font-cycle.wrap: true
