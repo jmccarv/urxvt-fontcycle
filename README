@@ -4,7 +4,7 @@ This rxvt-unicode (urxvt) extension provides the ability to have
 multiple fonts configured and easily switch between them at runtime.
 
 This can allow you to (among other things) easily increase and decrease
-font size.  But it's more than that because you choose the fonts to 
+font size. But it's more than that because you choose the fonts to 
 cycle between, it's not just one font.
 
 -----------------------------------------------------------------------
@@ -139,6 +139,11 @@ CONFIGURATION
 
         *   Mod5 (5)
 
+    urxvt.font-cycle.wrap: <true|false>
+        By default font-cycle will stop at the beginning or end of the list
+        of configured fonts. If this is set to true, font-cycle will wrap
+        around to the other end of the list and continue cycling.
+
 EXAMPLE CONFIGURATION
     Set the regular font and boldFont settings for urxvt 
     urxvt*font: -misc-fixed-medium-r-semicondensed--13-100-100-100-c-60-iso8859-1
@@ -170,6 +175,8 @@ EXAMPLE CONFIGURATION
 
     Configure accelerator !urxvt*font-cycle.accelerator: Control
     urxvt*font-cycle.accelerator: C
+
+    urxvt*font-cycle.wrap: true
 
     Notes:
 
