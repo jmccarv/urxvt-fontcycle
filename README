@@ -182,6 +182,6 @@ EXAMPLE CONFIGURATION
         plain list will have all 9 entries that the plain list is configured
         with.
 
-AUTHOR
-    Jason McCarver (slam@parasite.cc)
-
+AUTHORS
+    Jason McCarver <slam@parasite.cc>
+    Campbell Barton https://bitbucket.org/ideasman42/
