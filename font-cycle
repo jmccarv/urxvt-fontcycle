@@ -2,7 +2,7 @@
 
 use Data::Dumper;
 
-my $VERSION = '0.03';
+my $VERSION = '0.04';
 
 # See the bottom of this file for documentation (or run
 # perldoc on this file)
@@ -122,9 +122,7 @@ sub on_start {
     #
     # Try to find which index to start with based on the current
     # font setting (the one which will be in effect when the terminal
-    # starts.)  I originally tried to force a font switch to the default
-    # in an on_start() method (see bottom of file) but that broke
-    # window placement specified with -geometry (don't know why).
+    # starts.)
     #
     my $font = $self->locale_decode($self->{term}->resource('font'));
     utf8::encode($font);
@@ -147,7 +145,6 @@ sub on_start {
     ()
 }
 
-#sub on_user_command {
 sub on_action {
     my ($self, $cmd) = @_;
     my $me = $self->{_name};
@@ -506,25 +503,12 @@ configured with.
 
 =head1 AUTHOR
 
-Jason McCarver (slam@parasite.cc)
+=over
+
+=item Jason McCarver L<slam@parasite.cc>
+
+=item Campbell Barton L<https://bitbucket.org/ideasman42/>
+
+=back
 
 =cut
-
-# Switching fonts in the on_start() method broke the positioning
-# part of -geometry, like it was being ignored.  :(
-#sub on_start { 
-#    my ($self) = @_;
-#
-#    my $term = $self->{term};
-#    my $geom = $term->resource("geometry");
-#    $self->switch_font($self->{default_idx});
-#
-#    if ($geom =~ /\+([0-9]+)\+([0-9]+)/) {
-#        my ($xofs, $yofs) = ($1, $2);
-#        urxvt::warn("xofs=$xofs  yofs=$yofs\n");
-#        urxvt::warn("term_width=".$term->width."  term_height=".$term->height."\n");
-#        #$term->XMoveResizeWindow($term->parent, $xofs, $yofs, $term->width, $term->height);
-#    }
-#
-#    ()
-#}
