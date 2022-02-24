@@ -2,7 +2,7 @@
 
 use Data::Dumper;
 
-my $VERSION = '0.04';
+my $VERSION = '0.05';
 
 # See the bottom of this file for documentation (or run
 # perldoc on this file)
@@ -112,7 +112,7 @@ sub on_start {
     $self->{cur_idx}          = 0;
     $self->{max_idx}          = -1;
     $self->{default_idx}      = $self->get_x_resource("defaultIdx");
-    $self->{wrap}             = $self->get_x_resource("wrap");
+    $self->{wrap}             = lc($self->get_x_resource("wrap"));
     $self->{accel_mask}       = $self->get_accelerator_mask('accelerator');
     $self->{mouse_accel_mask} = $self->get_accelerator_mask('mouseAccelerator');
 
@@ -131,8 +131,8 @@ sub on_start {
         $self->{cur_idx} = $i, last if ($font && 0 == index($self->{fonts}->{''}->[$i], $font))
     }
 
-    $self->{default_idx} = $self->{cur_idx} unless defined $self->{default_idx};
-    $self->{wrap} = "false" unless defined $self->{wrap};
+    $self->{default_idx} //= $self->{cur_idx};
+    $self->{wrap} //= 'false';
 
     $self->{enabled} = 1;
 
@@ -236,7 +236,7 @@ sub switch_font {
     my ($self, $idx) = @_;
 
     $self->debug("switch_font(): new idx=$idx  max=".$self->{max_idx}."\n");
-    if ($self->{wrap} == "true") {
+    if ($self->{wrap} =~ /^[t1y]/) {
         $idx = $idx % ($self->{max_idx}+1);
     } else {
         return if ($idx < 0 || $idx > $self->{max_idx});
